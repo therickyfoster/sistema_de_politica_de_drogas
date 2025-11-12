@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Avanzado de Política de Drogas - Enfoque Basado en Evidencia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --medieval-bg: #2b1810;
+            --medieval-primary: #d4af37;
+            --medieval-secondary: #8b4513;
+            --medieval-text: #f5e6d3;
+            
+            --space-bg: #0a0e27;
+            --space-primary: #00d9ff;
+            --space-secondary: #7b2cbf;
+            --space-text: #e0e0e0;
+            
+            --anime-bg: #fff5f7;
+            --anime-primary: #ff1744;
+            --anime-secondary: #ffb74d;
+            --anime-text: #212121;
+            
+            --light-bg: #f8fafc;
+            --light-primary: #0d9488;
+            --light-secondary: #3b82f6;
+            --light-text: #1e293b;
+            
+            --dark-bg: #0f172a;
+            --dark-primary: #14b8a6;
+            --dark-secondary: #60a5fa;
+            --dark-text: #f1f5f9;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            line-height: 1.6;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        
+        body.theme-light {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #dbeafe 100%);
+            color: var(--light-text);
+        }
+        
+        body.theme-dark {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+            color: var(--dark-text);
+        }
+        
+        body.theme-medieval {
+            background: linear-gradient(135deg, var(--medieval-bg) 0%, #3d2415 100%);
+            color: var(--medieval-text);
+            font-family: 'Georgia', serif;
+        }
+        
+        body.theme-space {
+            background: linear-gradient(135deg, var(--space-bg) 0%, #1a1f3a 100%);
+            color: var(--space-text);
+        }
+        
+        body.theme-anime {
+            background: linear-gradient(135deg, var(--anime-bg) 0%, #ffe0e6 100%);
+            color: var(--anime-text);
+        }
+        
+        header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        body.theme-dark header,
+        body.theme-medieval header,
+        body.theme-space header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--light-primary);
+        }
+        
+        body.theme-dark .header-title { color: var(--dark-primary); }
+        body.theme-medieval .header-title { color: var(--medieval-primary); }
+        body.theme-space .header-title { color: var(--space-primary); }
+        body.theme-anime .header-title { color: var(--anime-primary); }
+        
+        .header-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--light-primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--light-secondary);
+            color: white;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--light-primary), var(--light-secondary));
+            transition: width 0.5s ease;
+        }
+        
+        .theme-selector {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid var(--light-primary);
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        body.theme-dark .theme-selector {
+            background: #1e293b;
+            color: white;
+            border-color: var(--dark-primary);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                transition: left 0.3s ease;
+                z-index: 999;
+                width: 280px;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            #menuToggle {
+                display: block !important;
+            }
+        }
+        
+        .sidebar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+        
+        body.theme-dark .sidebar {
+            background: rgba(30, 41, 59, 0.9);
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 0.75rem;
+            padding-left: 2.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>') no-repeat 0.75rem center;
+        }
+        
+        .progress-widget {
+            background: #ecfdf5;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        body.theme-dark .progress-widget {
+            background: rgba(20, 184, 166, 0.1);
+        }
+        
+        .progress-dots {
+            display: flex;
+            gap: 2px;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-dot {
+            flex: 1;
+            height: 6px;
+            background: #d1d5db;
+            border-radius: 3px;
+            transition: background 0.3s ease;
+        }
+        
+        .progress-dot.complete {
+            background: var(--light-primary);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.25rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .nav-item.active {
+            background: #d1fae5;
+            border-color: var(--light-primary);
+        }
+        
+        body.theme-dark .nav-item:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+        
+        body.theme-dark .nav-item.active {
+            background: rgba(20, 184, 166, 0.2);
+            border-color: var(--dark-primary);
+        }
+        
+        .nav-item .checkmark {
+            margin-left: auto;
+            color: var(--light-primary);
+            font-weight: bold;
+        }
+        
+        .content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        
+        body.theme-dark .content {
+            background: rgba(30, 41, 59, 0.9);
+        }
+        
+        .content h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--light-primary);
+        }
+        
+        body.theme-dark .content h2 {
+            color: var(--dark-primary);
+        }
+        
+        .content h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .content p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+        
+        .content ul, .content ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .collapsible {
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .collapsible-header {
+            padding: 1rem;
+            background: #f9fafb;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+        
+        .collapsible-header:hover {
+            background: #f3f4f6;
+        }
+        
+        .collapsible-content {
+            padding: 1rem;
+            display: none;
+        }
+        
+        .collapsible.open .collapsible-content {
+            display: block;
+        }
+        
+        .collapsible-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .collapsible.open .collapsible-icon {
+            transform: rotate(90deg);
+        }
+        
+        .highlight-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+        
+        .highlight-box.info {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .highlight-box.warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        
+        .highlight-box.success {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        
+        .highlight-box.tip {
+            background: #e0e7ff;
+            border-color: #6366f1;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .modal.open {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        body.theme-dark .modal-content {
+            background: #1e293b;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            color: #374151;
+        }
+        
+        .achievement-grid {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .achievement-card {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .achievement-card.unlocked {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        
+        .achievement-card.locked {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            opacity: 0.6;
+        }
+        
+        .achievement-icon {
+            font-size: 2rem;
+        }
+        
+        .achievement-badge {
+            position: absolute;
+            top: -0.5rem;
+            right: -0.5rem;
+            background: #f59e0b;
+            color: white;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .mnemonic-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #f59e0b;
+            margin: 1rem 0;
+        }
+        
+        .mnemonic-title {
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mnemonic-expand {
+            background: transparent;
+            border: none;
+            color: #d97706;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .mnemonic-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+        }
+        
+        .mnemonic-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mnemonic-letter {
+            font-weight: bold;
+            color: #d97706;
+            font-size: 1.25rem;
+            min-width: 1.5rem;
+        }
+        
+        .notes-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+        
+        body.theme-dark .notes-section {
+            background: rgba(51, 65, 85, 0.5);
+        }
+        
+        .note-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        
+        .note-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--light-primary);
+        }
+        
+        body.theme-dark .note-item {
+            background: #1e293b;
+        }
+        
+        .note-meta {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+        
+        .export-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            
+            header, .sidebar, .btn, .modal, .notes-section {
+                display: none;
+            }
+            
+            .container {
+                grid-template-columns: 1fr;
+                padding: 0;
+            }
+            
+            .content {
+                box-shadow: none;
+                padding: 1rem;
+            }
+            
+            .collapsible-content {
+                display: block !important;
+            }
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        *:focus-visible {
+            outline: 3px solid var(--light-primary);
+            outline-offset: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 1.125rem;
+            }
+            
+            .content h2 {
+                font-size: 1.5rem;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="theme-light">
+    
+    <header>
+        <div class="header-content">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button id="menuToggle" class="btn btn-secondary" style="display: none;">☰</button>
+                <h1 class="header-title">📚 Sistema de Política de Drogas</h1>
+            </div>
+            
+            <div class="header-controls">
+                <select class="theme-selector" id="themeSelector" aria-label="Selector de tema visual">
+                    <option value="light">☀️ Claro</option>
+                    <option value="dark">🌙 Oscuro</option>
+                    <option value="medieval">🏰 Medieval</option>
+                    <option value="space">🚀 Espacial</option>
+                    <option value="anime">🌸 Anime</option>
+                </select>
+                
+                <button class="btn btn-primary" id="achievementsBtn" aria-label="Ver logros" style="position: relative;">
+                    🏆 Logros
+                    <span id="achievementBadge" class="achievement-badge" style="display: none;">0</span>
+                </button>
+                
+                <div class="export-group">
+                    <button class="btn btn-secondary" id="exportHTML" title="Guardar como HTML">💾 HTML</button>
+                    <button class="btn btn-secondary" id="exportPDF" title="Imprimir/Guardar como PDF">📄 PDF</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="progress-bar-container" role="progressbar" aria-label="Progreso de lectura">
+            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <input 
+                type="text" 
+                class="search-box" 
+                id="searchBox" 
+                placeholder="🔍 Buscar en documento..."
+                aria-label="Buscar contenido"
+            >
+            
+            <div class="progress-widget">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600;">📊 Progreso</span>
+                    <span id="progressText">0/12</span>
+                </div>
+                <div class="progress-dots" id="progressDots"></div>
+            </div>
+            
+            <nav id="navMenu" aria-label="Navegación principal"></nav>
+        </aside>
+        
+        <main class="content" id="contentArea" role="main">
+            <div id="contentBody">
+                <h2>Bienvenido al Sistema de Política de Drogas</h2>
+                <p>Selecciona una sección del menú lateral para comenzar tu exploración.</p>
+                
+                <div class="highlight-box info">
+                    <strong>💡 Consejo:</strong> Este sistema guarda tu progreso automáticamente en tu navegador local.
+                </div>
+                
+                <div class="highlight-box tip">
+                    <strong>🎯 Funcionalidades:</strong>
+                    <ul style="margin-top: 0.5rem;">
+                        <li>✅ Seguimiento de progreso automático</li>
+                        <li>🏆 Sistema de logros gamificado</li>
+                        <li>📝 Notas personales en cada sección</li>
+                        <li>💾 Exportación de datos (HTML, PDF)</li>
+                        <li>🌈 Múltiples temas visuales</li>
+                        <li>🔍 Búsqueda en tiempo real</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="notes-section" id="notesSection" style="display: none;">
+                <h3>📝 Tus Notas</h3>
+                <textarea 
+                    class="note-input" 
+                    id="noteInput" 
+                    placeholder="Escribe tus reflexiones sobre esta sección..."
+                    aria-label="Campo de notas"
+                ></textarea>
+                <button class="btn btn-primary" id="addNoteBtn">➕ Agregar Nota</button>
+                
+                <div id="notesList" style="margin-top: 1rem;"></div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="modal" id="achievementsModal" role="dialog" aria-labelledby="achievementsTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeAchievements" aria-label="Cerrar">✕</button>
+            <h2 id="achievementsTitle">🏆 Logros Desbloqueados</h2>
+            <div class="achievement-grid" id="achievementsList"></div>
+        </div>
+    </div>
+    
+    <div class="modal" id="mnemonicModal" role="dialog" aria-labelledby="mnemonicTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeMnemonic" aria-label="Cerrar">✕</button>
+            <h2 id="mnemonicTitle"></h2>
+            <ul class="mnemonic-list" id="mnemonicList"></ul>
+        </div>
+    </div>
+    
+    <footer style="text-align: center; padding: 2rem; opacity: 0.7; font-size: 0.875rem;">
+        <p>🛡️ <strong>Declaración de Uso Ético:</strong> Esta herramienta es para investigación educativa y análisis de políticas públicas responsables.</p>
+        <p>Todos los datos se almacenan localmente en tu navegador.</p>
+    </footer>
+    
+    <script>
+        const SECTIONS = [
+            { id: 'sintesis', title: '1. Síntesis Ejecutiva', icon: '🎯' },
+            { id: 'principios', title: '2. Principios Rectores', icon: '🛡️' },
+            { id: 'diagnostico', title: '3. Diagnóstico y Riesgos', icon: '📊' },
+            { id: 'estrategia', title: '4. Propuesta Estratégica', icon: '💡' },
+            { id: 'metas', title: '5. Metas y Métricas', icon: '📈' },
+            { id: 'presupuesto', title: '6. Presupuesto', icon: '💰' },
+            { id: 'implementacion', title: '7. Implementación', icon: '✅' },
+            { id: 'comunicacion', title: '8. Comunicación', icon: '💬' },
+            { id: 'riesgos', title: '9. Gestión de Riesgos', icon: '⚠️' },
+            { id: 'casos', title: '10. Estudios de Caso', icon: '📖' },
+            { id: 'recomendaciones', title: '11. Recomendaciones', icon: '⭐' },
+            { id: 'conclusion', title: '12. Conclusión', icon: '🏆' }
+        ];
+        
+        const MNEMONICS = {
+            DISRE: {
+                text: "DISRE - Estrategia Principal",
+                expanded: [
+                    { letter: 'D', text: 'Dignidad primero' },
+                    { letter: 'I', text: 'Investigación basada en evidencia' },
+                    { letter: 'S', text: 'Subsidiariedad local' },
+                    { letter: 'R', text: 'Reparación social' },
+                    { letter: 'E', text: 'Evaluación continua' }
+                ]
+            },
+            SAFE: {
+                text: "SAFE - Suministro Seguro",
+                expanded: [
+                    { letter: 'S', text: 'Supervisión médica' },
+                    { letter: 'A', text: 'Acceso controlado' },
+                    { letter: 'F', text: 'Farmacéutico garantizado' },
+                    { letter: 'E', text: 'Evaluación permanente' }
+                ]
+            },
+            CARE: {
+                text: "CARE - Atención Familiar",
+                expanded: [
+                    { letter: 'C', text: 'Consulta comunitaria' },
+                    { letter: 'A', text: 'Apoyo integral' },
+                    { letter: 'R', text: 'Reinserción laboral' },
+                    { letter: 'E', text: 'Estabilidad del hogar' }
+                ]
+            }
+        };
+        
+        const ACHIEVEMENTS = [
+            { id: 'reader', name: 'Lector Comprometido', desc: 'Lee 5 secciones', icon: '📚', threshold: 5 },
+            { id: 'explorer', name: 'Explorador de Políticas', desc: 'Explora todas las secciones', icon: '🗺️', threshold: 12 },
+            { id: 'annotator', name: 'Analista', desc: 'Crea 5 notas', icon: '📝', threshold: 5 },
+            { id: 'completer', name: 'Maestro de Política', desc: 'Completa todo', icon: '🎓', threshold: 12 }
+        ];
+        
+        let state = {
+            currentSection: 'sintesis',
+            readSections: new Set(),
+            notes: {},
+            achievements: new Set(),
+            theme: 'light'
+        };
+        
+        function loadState() {
+            const saved = localStorage.getItem('policySystemState');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state.readSections = new Set(parsed.readSections || []);
+                state.notes = parsed.notes || {};
+                state.achievements = new Set(parsed.achievements || []);
+                state.theme = parsed.theme || 'light';
+            }
+        }
+        
+        function saveState() {
+            localStorage.setItem('policySystemState', JSON.stringify({
+                readSections: Array.from(state.readSections),
+                notes: state.notes,
+                achievements: Array.from(state.achievements),
+                theme: state.theme
+            }));
+        }
+        
+        function initNavigation() {
+            const navMenu = document.getElementById('navMenu');
+            const progressDots = document.getElementById('progressDots');
+            
+            SECTIONS.forEach(section => {
+                const navItem = document.createElement('div');
+                navItem.className = 'nav-item';
+                navItem.innerHTML = `
+                    <span>${section.icon}</span>
+                    <span style="flex: 1;">${section.title}</span>
+                    <span class="checkmark" style="display: ${state.readSections.has(section.id) ? 'block' : 'none'};">✓</span>
+                `;
+                navItem.onclick = () => loadSection(section.id);
+                navMenu.appendChild(navItem);
+                
+                const dot = document.createElement('div');
+                dot.className = `progress-dot ${state.readSections.has(section.id) ? 'complete' : ''}`;
+                dot.dataset.section = section.id;
+                progressDots.appendChild(dot);
+            });
+            
+            updateProgress();
+        }
+        
+        function loadSection(sectionId) {
+            state.currentSection = sectionId;
+            state.readSections.add(sectionId);
+            saveState();
+            
+            document.querySelectorAll('.nav-item').forEach((item, idx) => {
+                item.classList.toggle('active', SECTIONS[idx].id === sectionId);
+            });
+            
+            const content = getContentHTML(sectionId);
+            document.getElementById('contentBody').innerHTML = content;
+            
+            document.getElementById('notesSection').style.display = 'block';
+            loadNotes(sectionId);
+            
+            updateProgress();
+            checkAchievements();
+            
+            document.querySelector('.checkmark').style.display = 'block';
+            document.querySelector(`.progress-dot[data-section="${sectionId}"]`).classList.add('complete');
+        }
+        
+        function getContentHTML(sectionId) {
+            const contentMap = {
+                sintesis: `
+                    <h2>1. Síntesis Ejecutiva</h2>
+                    
+                    <div class="mnemonic-box">
+                        <div class="mnemonic-title">🧠 Mnemotecnia clave: ${MNEMONICS.DISRE.text}</div>
+                        <button class="mnemonic-expand" onclick="showMnemonic('DISRE')">Ver expansión →</button>
+                    </div>
+                    
+                    <p>La «guerra contra las drogas» ha demostrado, a lo largo de décadas, que la represión por sí sola no elimina el consumo ni mejora las condiciones sociales.</p>
+                    
+                    <div class="collapsible open">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>📋 Los Tres Pilares Estratégicos</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <ol style="margin-left: 2rem; margin-top: 1rem;">
+                                <li><strong>Despenalización</strong> y respuesta sanitaria inmediata</li>
+                                <li><strong>Pilotos controlados</strong> de suministro seguro</li>
+                                <li><strong>Programas de reparación social</strong> y estabilidad familiar</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box info">
+                        <h3 style="margin-bottom: 0.5rem;">🎯 Objetivo Central</h3>
+                        <p>Reducir el daño humano y social, proteger la soberanía comunitaria y desarticular estructuras criminales.</p>
+                    </div>
+                `,
+                
+                principios: `
+                    <h2>2. Principios Rectores</h2>
+                    
+                    <p>Esta propuesta se fundamenta en cinco principios éticos que guían todas las decisiones:</p>
+                    
+                    <div class="collapsible">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>❤️ 1. Dignidad y Salud</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <p>Las respuestas deben priorizar la vida, la salud mental y la reconstrucción familiar por encima de la sanción penal.</p>
+                            <ul style="margin-left: 2rem; margin-top: 1rem;">
+                                <li>Tratamiento sobre castigo</li>
+                                <li>Reducción de daños como prioridad</li>
+                                <li>Respeto a la autonomía personal</li>
+                                <li>Protección de la unidad familiar</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="collapsible">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>🏘️ 2. Subsidiariedad y Soberanía</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <p>Las soluciones se diseñan localmente, con el Estado como garante y las comunidades como co-diseñadoras.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="collapsible">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>📊 3. Evidencia y Prudencia</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <p>Políticas pilotadas con evaluación independiente y métricas que permitan ajustar o revertir medidas.</p>
+                        </div>
+                    </div>
+                `,
+                
+                diagnostico: `
+                    <h2>3. Diagnóstico y Riesgos</h2>
+                    
+                    <p>El modelo prohibicionista actual genera múltiples daños sistémicos.</p>
+                    
+                    <div class="collapsible">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>🚨 Problemas Críticos Actuales</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <h4 style="margin-top: 1rem;">Criminalización Masiva</h4>
+                            <ul style="margin-left: 2rem;">
+                                <li>Millones de arrestos por posesión simple</li>
+                                <li>Sobrepoblación carcelaria (60-70%)</li>
+                                <li>Antecedentes que impiden reinserción</li>
+                            </ul>
+                            
+                            <h4 style="margin-top: 1rem;">Desintegración Familiar</h4>
+                            <ul style="margin-left: 2rem;">
+                                <li>Retiro de custodia por consumo parental</li>
+                                <li>Trauma intergeneracional</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box warning">
+                        <strong>⚠️ Riesgo de Inacción:</strong> Continuar con el modelo actual proyecta incremento del 40% en violencia.
+                    </div>
+                `,
+                
+                estrategia: `
+                    <h2>4. Propuesta Estratégica</h2>
+                    
+                    <div class="collapsible open">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>💊 4.1 Despenalización y Respuesta Sanitaria</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <div class="mnemonic-box">
+                                <div class="mnemonic-title">🧠 Mnemotecnia: ${MNEMONICS.CARE.text}</div>
+                                <button class="mnemonic-expand" onclick="showMnemonic('CARE')">Ver expansión →</button>
+                            </div>
+                            
+                            <h4>Componentes Clave:</h4>
+                            <ul style="margin-left: 2rem;">
+                                <li><strong>Derivación sanitaria:</strong> Evaluación médica en lugar de arresto</li>
+                                <li><strong>Centros supervisados:</strong> Espacios clínicos con personal médico</li>
+                                <li><strong>Reducción de daños:</strong> Naloxona, kits de testeo</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="collapsible">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>🏥 4.2 Pilotos de Suministro Seguro</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <div class="mnemonic-box">
+                                <div class="mnemonic-title">🧠 Mnemotecnia: ${MNEMONICS.SAFE.text}</div>
+                                <button class="mnemonic-expand" onclick="showMnemonic('SAFE')">Ver expansión →</button>
+                            </div>
+                            
+                            <p>Programa en fases con evaluación continua y auditoría independiente.</p>
+                        </div>
+                    </div>
+                `,
+                
+                metas: `
+                    <h2>5. Metas y Métricas</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div style="padding: 1rem; background: #d1fae5; border-radius: 0.5rem; border: 2px solid #10b981;">
+                            <h4 style="color: #065f46;">👨‍👩‍👧 Separaciones Familiares</h4>
+                            <p style="font-size: 2rem; font-weight: bold; color: #10b981;">↓ 40%</p>
+                        </div>
+                        
+                        <div style="padding: 1rem; background: #dbeafe; border-radius: 0.5rem; border: 2px solid #3b82f6;">
+                            <h4 style="color: #1e40af;">💊 Sobredosis</h4>
+                            <p style="font-size: 2rem; font-weight: bold; color: #3b82f6;">↓ 50%</p>
+                        </div>
+                        
+                        <div style="padding: 1rem; background: #e0e7ff; border-radius: 0.5rem; border: 2px solid #6366f1;">
+                            <h4 style="color: #4338ca;">🚔 Arrestos</h4>
+                            <p style="font-size: 2rem; font-weight: bold; color: #6366f1;">↓ 70%</p>
+                        </div>
+                    </div>
+                `,
+                
+                presupuesto: `
+                    <h2>6. Presupuesto Estimado</h2>
+                    
+                    <div class="highlight-box info">
+                        <h3>💰 Inversión Total: $750M (24 meses)</h3>
+                        <ul style="margin-left: 2rem; margin-top: 1rem;">
+                            <li>Infraestructura Sanitaria: $250M</li>
+                            <li>Programas Sociales: $300M</li>
+                            <li>Piloto de Suministro: $100M</li>
+                            <li>Reparación Social: $50M</li>
+                            <li>Evaluación: $50M</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="highlight-box success">
+                        <strong>✅ ROI:</strong> Cada $1 invertido genera $4 en ahorro social.
+                    </div>
+                `,
+                
+                implementacion: `
+                    <h2>7. Plan de Implementación - 24 Meses</h2>
+                    
+                    <div style="padding: 1rem; background: #dbeafe; border-left: 4px solid #3b82f6; margin-bottom: 1rem; border-radius: 0.25rem;">
+                        <strong>Meses 0-6: Preparación</strong>
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>✅ Diagnóstico comunitario</li>
+                            <li>✅ Diseño de marco legal</li>
+                            <li>✅ Capacitación de equipos</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="padding: 1rem; background: #d1fae5; border-left: 4px solid #10b981; margin-bottom: 1rem; border-radius: 0.25rem;">
+                        <strong>Meses 6-12: Despenalización</strong>
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>✅ Apertura de 10 centros</li>
+                            <li>✅ Inicio de expungement</li>
+                        </ul>
+                    </div>
+                `,
+                
+                comunicacion: `
+                    <h2>8. Estrategia de Comunicación</h2>
+                    
+                    <div class="highlight-box info">
+                        <strong>Mensaje 1: Salud, no castigo</strong>
+                        <p style="margin-top: 0.5rem;">"El consumo es un problema de salud pública."</p>
+                    </div>
+                    
+                    <div class="highlight-box info">
+                        <strong>Mensaje 2: Proteger familias</strong>
+                        <p style="margin-top: 0.5rem;">"Mantenemos a las familias unidas."</p>
+                    </div>
+                `,
+                
+                riesgos: `
+                    <h2>9. Gestión de Riesgos</h2>
+                    
+                    <div style="padding: 1rem; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 0.25rem;">
+                        <strong>Riesgo: Oposición política</strong>
+                        <p style="margin-top: 0.5rem;"><strong>Mitigación:</strong></p>
+                        <ul style="margin-left: 2rem;">
+                            <li>Consulta con líderes religiosos</li>
+                            <li>Énfasis en evidencia científica</li>
+                            <li>Pilotos reversibles</li>
+                        </ul>
+                    </div>
+                `,
+                
+                casos: `
+                    <h2>10. Estudios de Caso</h2>
+                    
+                    <div class="highlight-box success">
+                        <h3>🇵🇹 Portugal (2001)</h3>
+                        <p>Despenalización del consumo personal. Resultados: reducción del 50% en sobredosis, 90% en VIH relacionado con drogas.</p>
+                    </div>
+                    
+                    <div class="highlight-box success">
+                        <h3>🇨🇭 Suiza (1994)</h3>
+                        <p>Programas de heroína asistida. 80% de participantes se estabilizaron y encontraron empleo.</p>
+                    </div>
+                `,
+                
+                recomendaciones: `
+                    <h2>11. Recomendaciones Finales</h2>
+                    
+                    <ol style="margin-left: 2rem; margin-top: 1rem;">
+                        <li>Iniciar con legislación habilitante en 3 meses</li>
+                        <li>Conformar comité técnico multi-sectorial</li>
+                        <li>Lanzar consulta pública en territorios piloto</li>
+                        <li>Establecer sistema de datos abiertos</li>
+                        <li>Evaluar resultados cada 6 meses</li>
+                    </ol>
+                    
+                    <div class="highlight-box tip">
+                        <strong>🎯 Próximos Pasos:</strong> Convocatoria a audiencia pública legislativa dentro de 30 días.
+                    </div>
+                `,
+                
+                conclusion: `
+                    <h2>12. Conclusión</h2>
+                    
+                    <p>La política de drogas basada en evidencia no es una utopía, sino una necesidad ética y práctica.</p>
+                    
+                    <div class="highlight-box success">
+                        <h3>✅ Lo que sabemos que funciona:</h3>
+                        <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                            <li>Despenalización reduce daños sin aumentar consumo</li>
+                            <li>Suministro seguro previene sobredosis</li>
+                            <li>Reparación social restaura comunidades</li>
+                            <li>Transparencia genera confianza pública</li>
+                        </ul>
+                    </div>
+                    
+                    <p style="margin-top: 2rem; font-size: 1.25rem; text-align: center; font-weight: bold;">
+                        🏆 ¡Felicitaciones por completar el sistema!
+                    </p>
+                `
+            };
+            
+            return contentMap[sectionId] || '<p>Contenido en desarrollo.</p>';
+        }
+        
+        function toggleCollapsible(header) {
+            header.parentElement.classList.toggle('open');
+        }
+        
+        function showMnemonic(key) {
+            const mnemonic = MNEMONICS[key];
+            if (!mnemonic) return;
+            
+            document.getElementById('mnemonicTitle').textContent = mnemonic.text;
+            const list = document.getElementById('mnemonicList');
+            list.innerHTML = '';
+            
+            mnemonic.expanded.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="mnemonic-letter">${item.letter}</span>
+                    <span>${item.text}</span>
+                `;
+                list.appendChild(li);
+            });
+            
+            document.getElementById('mnemonicModal').classList.add('open');
+        }
+        
+        function updateProgress() {
+            const total = SECTIONS.length;
+            const completed = state.readSections.size;
+            const percentage = (completed / total) * 100;
+            
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${completed}/${total}`;
+        }
+        
+        function checkAchievements() {
+            ACHIEVEMENTS.forEach(achievement => {
+                if (state.achievements.has(achievement.id)) return;
+                
+                let shouldUnlock = false;
+                
+                if (achievement.id === 'reader' && state.readSections.size >= 5) shouldUnlock = true;
+                if (achievement.id === 'explorer' && state.readSections.size >= 12) shouldUnlock = true;
+                if (achievement.id === 'annotator' && Object.values(state.notes).flat().length >= 5) shouldUnlock = true;
+                if (achievement.id === 'completer' && state.readSections.size === 12) shouldUnlock = true;
+                
+                if (shouldUnlock) {
+                    state.achievements.add(achievement.id);
+                    saveState();
+                    showNotification(`🎉 ¡Logro desbloqueado: ${achievement.name}!`);
+                }
+            });
+            
+            updateAchievementBadge();
+        }
+        
+        function updateAchievementBadge() {
+            const badge = document.getElementById('achievementBadge');
+            const count = state.achievements.size;
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            }
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                z-index: 3000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        function loadNotes(sectionId) {
+            const notesList = document.getElementById('notesList');
+            notesList.innerHTML = '';
+            
+            const sectionNotes = state.notes[sectionId] || [];
+            sectionNotes.forEach((note, idx) => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'note-item';
+                noteDiv.innerHTML = `
+                    <p>${note.text}</p>
+                    <div class="note-meta">${new Date(note.date).toLocaleString()}</div>
+                `;
+                notesList.appendChild(noteDiv);
+            });
+        }
+        
+        document.getElementById('themeSelector').addEventListener('change', (e) => {
+            document.body.className = `theme-${e.target.value}`;
+            state.theme = e.target.value;
+            saveState();
+        });
+        
+        document.getElementById('achievementsBtn').addEventListener('click', () => {
+            const modal = document.getElementById('achievementsModal');
+            const list = document.getElementById('achievementsList');
+            list.innerHTML = '';
+            
+            ACHIEVEMENTS.forEach(achievement => {
+                const isUnlocked = state.achievements.has(achievement.id);
+                const card = document.createElement('div');
+                card.className = `achievement-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+                card.innerHTML = `
+                    <span class="achievement-icon">${achievement.icon}</span>
+                    <div>
+                        <strong>${achievement.name}</strong>
+                        <p style="font-size: 0.875rem; opacity: 0.8;">${achievement.desc}</p>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+            
+            modal.classList.add('open');
+        });
+        
+        document.getElementById('closeAchievements').addEventListener('click', () => {
+            document.getElementById('achievementsModal').classList.remove('open');
+        });
+        
+        document.getElementById('closeMnemonic').addEventListener('click', () => {
+            document.getElementById('mnemonicModal').classList.remove('open');
+        });
+        
+        document.getElementById('addNoteBtn').addEventListener('click', () => {
+            const input = document.getElementById('noteInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            if (!state.notes[state.currentSection]) {
+                state.notes[state.currentSection] = [];
+            }
+            
+            state.notes[state.currentSection].push({
+                text: text,
+                date: Date.now()
+            });
+            
+            saveState();
+            loadNotes(state.currentSection);
+            input.value = '';
+            checkAchievements();
+        });
+        
+        document.getElementById('exportHTML').addEventListener('click', () => {
+            const content = document.documentElement.outerHTML;
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sistema-politica-drogas.html';
+            a.click();
+        });
+        
+        document.getElementById('exportPDF').addEventListener('click', () => {
+            window.print();
+        });
+        
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+        
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.nav-item').forEach((item, idx) => {
+                const text = SECTIONS[idx].title.toLowerCase();
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        });
+        
+        window.showMnemonic = showMnemonic;
+        window.toggleCollapsible = toggleCollapsible;
+        
+        loadState();
+        document.body.className = `theme-${state.theme}`;
+        document.getElementById('themeSelector').value = state.theme;
+        initNavigation();
+        loadSection(state.currentSection);
+    </script>
+</body>
+</html>
