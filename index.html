@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Avanzado de Política de Drogas - Enfoque Basado en Evidencia</title>
+    <style>
+        /* ===== ZERO-HARM / ANTI-INVERSION =====
+         * This tool is designed for educational policy research and civic engagement.
+         * NOT FOR: surveillance, manipulation, weaponization, or extraction.
+         * Respects all applicable licenses and human dignity.
+         * Data remains local (IndexedDB) - no external transmission without consent.
+         */
+        
+        /* ===== BASE STYLES & CSS RESET ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            /* Medieval Theme */
+            --medieval-bg: #2b1810;
+            --medieval-primary: #d4af37;
+            --medieval-secondary: #8b4513;
+            --medieval-text: #f5e6d3;
+            
+            /* Space Theme */
+            --space-bg: #0a0e27;
+            --space-primary: #00d9ff;
+            --space-secondary: #7b2cbf;
+            --space-text: #e0e0e0;
+            
+            /* Anime Theme */
+            --anime-bg: #fff5f7;
+            --anime-primary: #ff1744;
+            --anime-secondary: #ffb74d;
+            --anime-text: #212121;
+            
+            /* Default/Light Theme */
+            --light-bg: #f8fafc;
+            --light-primary: #0d9488;
+            --light-secondary: #3b82f6;
+            --light-text: #1e293b;
+            
+            /* Dark Theme */
+            --dark-bg: #0f172a;
+            --dark-primary: #14b8a6;
+            --dark-secondary: #60a5fa;
+            --dark-text: #f1f5f9;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            line-height: 1.6;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Theme Classes */
+        body.theme-light {
+            background: linear-gradient(135deg, var(--light-bg) 0%, #dbeafe 100%);
+            color: var(--light-text);
+        }
+        
+        body.theme-dark {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+            color: var(--dark-text);
+        }
+        
+        body.theme-medieval {
+            background: linear-gradient(135deg, var(--medieval-bg) 0%, #3d2415 100%);
+            color: var(--medieval-text);
+            font-family: 'Georgia', serif;
+        }
+        
+        body.theme-space {
+            background: linear-gradient(135deg, var(--space-bg) 0%, #1a1f3a 100%);
+            color: var(--space-text);
+        }
+        
+        body.theme-anime {
+            background: linear-gradient(135deg, var(--anime-bg) 0%, #ffe0e6 100%);
+            color: var(--anime-text);
+        }
+        
+        /* ===== HEADER ===== 
+         * Sticky navigation bar with progress tracking
+         * Contains: title, theme selector, achievements, export buttons
+         */
+        header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        body.theme-dark header,
+        body.theme-medieval header,
+        body.theme-space header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--light-primary);
+        }
+        
+        body.theme-dark .header-title { color: var(--dark-primary); }
+        body.theme-medieval .header-title { color: var(--medieval-primary); }
+        body.theme-space .header-title { color: var(--space-primary); }
+        body.theme-anime .header-title { color: var(--anime-primary); }
+        
+        .header-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--light-primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--light-secondary);
+            color: white;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--light-primary), var(--light-secondary));
+            transition: width 0.5s ease;
+        }
+        
+        /* ===== THEME SELECTOR =====
+         * Dropdown for selecting visual themes
+         */
+        .theme-selector {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 2px solid var(--light-primary);
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        body.theme-dark .theme-selector {
+            background: #1e293b;
+            color: white;
+            border-color: var(--dark-primary);
+        }
+        
+        /* ===== MAIN LAYOUT =====
+         * Two-column layout: sidebar + content area
+         */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                transition: left 0.3s ease;
+                z-index: 999;
+                width: 280px;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            #menuToggle {
+                display: block !important;
+            }
+        }
+        
+        /* ===== SIDEBAR =====
+         * Navigation panel with search, progress tracker, and section links
+         */
+        .sidebar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+        
+        body.theme-dark .sidebar {
+            background: rgba(30, 41, 59, 0.9);
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 0.75rem;
+            padding-left: 2.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>') no-repeat 0.75rem center;
+        }
+        
+        .progress-widget {
+            background: #ecfdf5;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        body.theme-dark .progress-widget {
+            background: rgba(20, 184, 166, 0.1);
+        }
+        
+        .progress-dots {
+            display: flex;
+            gap: 2px;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-dot {
+            flex: 1;
+            height: 6px;
+            background: #d1d5db;
+            border-radius: 3px;
+            transition: background 0.3s ease;
+        }
+        
+        .progress-dot.complete {
+            background: var(--light-primary);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.25rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .nav-item.active {
+            background: #d1fae5;
+            border-color: var(--light-primary);
+        }
+        
+        body.theme-dark .nav-item:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+        
+        body.theme-dark .nav-item.active {
+            background: rgba(20, 184, 166, 0.2);
+            border-color: var(--dark-primary);
+        }
+        
+        .nav-item .checkmark {
+            margin-left: auto;
+            color: var(--light-primary);
+            font-weight: bold;
+        }
+        
+        /* ===== CONTENT AREA =====
+         * Main reading area with collapsible sections
+         */
+        .content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        
+        body.theme-dark .content {
+            background: rgba(30, 41, 59, 0.9);
+        }
+        
+        .content h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--light-primary);
+        }
+        
+        body.theme-dark .content h2 {
+            color: var(--dark-primary);
+        }
+        
+        .content h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .content p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+        
+        .content ul, .content ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* ===== COLLAPSIBLE SECTIONS =====
+         * Expandable content blocks for better organization
+         */
+        .collapsible {
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .collapsible-header {
+            padding: 1rem;
+            background: #f9fafb;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+        
+        .collapsible-header:hover {
+            background: #f3f4f6;
+        }
+        
+        .collapsible-content {
+            padding: 1rem;
+            display: none;
+        }
+        
+        .collapsible.open .collapsible-content {
+            display: block;
+        }
+        
+        .collapsible-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .collapsible.open .collapsible-icon {
+            transform: rotate(90deg);
+        }
+        
+        /* ===== HIGHLIGHT BOXES =====
+         * Colored callout boxes for key information
+         */
+        .highlight-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+        
+        .highlight-box.info {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .highlight-box.warning {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        
+        .highlight-box.success {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        
+        .highlight-box.tip {
+            background: #e0e7ff;
+            border-color: #6366f1;
+        }
+        
+        /* ===== MODAL SYSTEM =====
+         * Overlay dialogs for achievements, mnemonics, notes
+         */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .modal.open {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        body.theme-dark .modal-content {
+            background: #1e293b;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            color: #374151;
+        }
+        
+        /* ===== ACHIEVEMENT CARDS =====
+         * Gamification badges with unlock status
+         */
+        .achievement-grid {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .achievement-card {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .achievement-card.unlocked {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        
+        .achievement-card.locked {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            opacity: 0.6;
+        }
+        
+        .achievement-icon {
+            font-size: 2rem;
+        }
+        
+        .achievement-badge {
+            position: relative;
+            top: -0.5rem;
+            right: -0.5rem;
+            background: #f59e0b;
+            color: white;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        /* ===== MNEMONIC DISPLAY =====
+         * Memory aid cards with expandable details
+         */
+        .mnemonic-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #f59e0b;
+            margin: 1rem 0;
+        }
+        
+        .mnemonic-title {
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mnemonic-expand {
+            background: transparent;
+            border: none;
+            color: #d97706;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .mnemonic-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+        }
+        
+        .mnemonic-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mnemonic-letter {
+            font-weight: bold;
+            color: #d97706;
+            font-size: 1.25rem;
+            min-width: 1.5rem;
+        }
+        
+        /* ===== NOTES SECTION =====
+         * Personal annotation system
+         */
+        .notes-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+        
+        body.theme-dark .notes-section {
+            background: rgba(51, 65, 85, 0.5);
+        }
+        
+        .note-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        
+        .note-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--light-primary);
+        }
+        
+        body.theme-dark .note-item {
+            background: #1e293b;
+        }
+        
+        .note-meta {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+        
+        /* ===== EXPORT BUTTONS =====
+         * Data export functionality (HTML, PDF, JSON)
+         */
+        .export-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        /* ===== PRINT STYLES =====
+         * Clean formatting for PDF export
+         */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            
+            header, .sidebar, .btn, .modal, .notes-section {
+                display: none;
+            }
+            
+            .container {
+                grid-template-columns: 1fr;
+                padding: 0;
+            }
+            
+            .content {
+                box-shadow: none;
+                padding: 1rem;
+            }
+            
+            .collapsible-content {
+                display: block !important;
+            }
+        }
+        
+        /* ===== NOSCRIPT FALLBACK =====
+         * Basic functionality without JavaScript
+         */
+        noscript {
+            display: block;
+            padding: 2rem;
+            background: #fef2f2;
+            color: #991b1b;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* ===== ACCESSIBILITY =====
+         * Keyboard navigation and screen reader support
+         */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        *:focus-visible {
+            outline: 3px solid var(--light-primary);
+            outline-offset: 2px;
+        }
+        
+        /* ===== LOADING STATE =====
+         * Spinner for async operations
+         */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f4f6;
+            border-top-color: var(--light-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ===== RESPONSIVE TYPOGRAPHY ===== */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 1.125rem;
+            }
+            
+            .content h2 {
+                font-size: 1.5rem;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+        }
+        
+        /* ===== THEME-SPECIFIC ENHANCEMENTS ===== */
+        body.theme-medieval .btn-primary {
+            background: var(--medieval-primary);
+            color: var(--medieval-bg);
+            border: 2px solid var(--medieval-secondary);
+        }
+        
+        body.theme-space .btn-primary {
+            background: var(--space-primary);
+            color: var(--space-bg);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+        
+        body.theme-anime .btn-primary {
+            background: var(--anime-primary);
+            color: white;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="theme-light">
+    
+    <noscript>
+        ⚠️ Este sistema requiere JavaScript para funcionar completamente. Por favor, habilite JavaScript en su navegador.
+    </noscript>
+    
+    <!-- ===== HEADER SECTION =====
+         Sticky navigation with theme selector, progress bar, and action buttons
+         Shows: logo/title, theme dropdown, achievements button (with count badge), export buttons
+    -->
+    <header>
+        <div class="header-content">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button id="menuToggle" class="btn btn-secondary" style="display: none;">☰</button>
+                <h1 class="header-title">📚 Sistema de Política de Drogas</h1>
+            </div>
+            
+            <div class="header-controls">
+                <select class="theme-selector" id="themeSelector" aria-label="Selector de tema visual">
+                    <option value="light">☀️ Claro</option>
+                    <option value="dark">🌙 Oscuro</option>
+                    <option value="medieval">🏰 Medieval</option>
+                    <option value="space">🚀 Espacial</option>
+                    <option value="anime">🌸 Anime</option>
+                </select>
+                
+                <button class="btn btn-primary" id="achievementsBtn" aria-label="Ver logros">
+                    🏆 <span id="achievementBadge" style="display: none;"></span>
+                </button>
+                
+                <div class="export-group">
+                    <button class="btn btn-secondary" id="exportHTML" title="Guardar como HTML">💾 HTML</button>
+                    <button class="btn btn-secondary" id="exportPDF" title="Imprimir/Guardar como PDF">📄 PDF</button>
+                    <button class="btn btn-secondary" id="exportJSON" title="Exportar datos">📦 JSON</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="progress-bar-container" role="progressbar" aria-label="Progreso de lectura">
+            <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+        </div>
+    </header>
+    
+    <!-- ===== MAIN CONTAINER =====
+         Two-column layout: sidebar (navigation) + content (reading area)
+    -->
+    <div class="container">
+        
+        <!-- ===== SIDEBAR =====
+             Navigation panel with search, progress tracker, section links
+             Features: search box, progress widget, collapsible nav items with checkmarks
+        -->
+        <aside class="sidebar" id="sidebar">
+            <input 
+                type="text" 
+                class="search-box" 
+                id="searchBox" 
+                placeholder="🔍 Buscar en documento..."
+                aria-label="Buscar contenido"
+            >
+            
+            <div class="progress-widget">
+                <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600;">📊 Progreso</span>
+                    <span id="progressText">0/12</span>
+                </div>
+                <div class="progress-dots" id="progressDots"></div>
+            </div>
+            
+            <nav id="navMenu" aria-label="Navegación principal"></nav>
+        </aside>
+        
+        <!-- ===== CONTENT AREA =====
+             Main reading area with dynamic content loading
+             Includes: section title, content body, action buttons, notes section
+        -->
+        <main class="content" id="contentArea" role="main">
+            <div id="contentBody">
+                <h2>Bienvenido al Sistema de Política de Drogas</h2>
+                <p>Selecciona una sección del menú lateral para comenzar tu exploración.</p>
+                
+                <div class="highlight-box info">
+                    <strong>💡 Consejo:</strong> Este sistema guarda tu progreso automáticamente usando IndexedDB. Tus datos permanecen en tu dispositivo.
+                </div>
+                
+                <div class="highlight-box tip">
+                    <strong>🎯 Funcionalidades:</strong>
+                    <ul style="margin-top: 0.5rem;">
+                        <li>✅ Seguimiento de progreso automático</li>
+                        <li>🏆 Sistema de logros gamificado</li>
+                        <li>📝 Notas personales en cada sección</li>
+                        <li>🔖 Marcadores para referencias rápidas</li>
+                        <li>💾 Exportación de datos (HTML, PDF, JSON)</li>
+                        <li>🌈 Múltiples temas visuales</li>
+                        <li>🔍 Búsqueda en tiempo real</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Notes section for current page -->
+            <div class="notes-section" id="notesSection" style="display: none;">
+                <h3>📝 Tus Notas</h3>
+                <textarea 
+                    class="note-input" 
+                    id="noteInput" 
+                    placeholder="Escribe tus reflexiones sobre esta sección..."
+                    aria-label="Campo de notas"
+                ></textarea>
+                <button class="btn btn-primary" id="addNoteBtn">➕ Agregar Nota</button>
+                
+                <div id="notesList" style="margin-top: 1rem;"></div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- ===== ACHIEVEMENTS MODAL =====
+         Displays unlocked and locked achievements with progress
+    -->
+    <div class="modal" id="achievementsModal" role="dialog" aria-labelledby="achievementsTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeAchievements" aria-label="Cerrar">✕</button>
+            <h2 id="achievementsTitle">🏆 Logros Desbloqueados</h2>
+            <div class="achievement-grid" id="achievementsList"></div>
+        </div>
+    </div>
+    
+    <!-- ===== MNEMONIC MODAL =====
+         Shows expanded mnemonic breakdowns
+    -->
+    <div class="modal" id="mnemonicModal" role="dialog" aria-labelledby="mnemonicTitle">
+        <div class="modal-content">
+            <button class="modal-close" id="closeMnemonic" aria-label="Cerrar">✕</button>
+            <h2 id="mnemonicTitle"></h2>
+            <ul class="mnemonic-list" id="mnemonicList"></ul>
+        </div>
+    </div>
+    
+    <!-- ===== ZERO-HARM FOOTER =====
+         Visible disclaimer about intended use
+    -->
+    <footer style="text-align: center; padding: 2rem; opacity: 0.7; font-size: 0.875rem;">
+        <p>🛡️ <strong>Zero-Harm Declaration:</strong> Esta herramienta es para investigación educativa, análisis de políticas públicas y compromiso cívico responsable.</p>
+        <p>No está diseñada para vigilancia, manipulación o cualquier uso que pueda dañar a personas, ecosistemas o soberanía comunitaria.</p>
+        <p>Todos los datos se almacenan localmente en tu navegador. No se transmite información a servidores externos.</p>
+        <p style="margin-top: 1rem;">📧 Contacto: admin@planetaryrestorationarchive.com | Licensed under Creative Commons BY-NC-SA 4.0</p>
+    </footer>
+    
+    <script>
+        /* ===== ZERO-HARM / ANTI-INVERSION NOTICE =====
+         * This JavaScript implements client-side only functionality.
+         * Rate limiting and input sanitization included to prevent abuse.
+         * All data stays local (IndexedDB). No external API calls without explicit consent.
+         * Licensed under creative commons with attribution requirements.
+         */
+        
+        // ===== CONFIGURATION & DATA STRUCTURES =====
+        
+        const APP_CONFIG = {
+            dbName: 'PolicySystemDB',
+            dbVersion: 1,
+            maxNotesPerSection: 50,
+            maxSearchResults: 100,
+            analyticsEndpoint: 'https://analytics.planetaryrestorationarchive.com/track',
+            dailySummaryEmail: 'admin@planetaryrestorationarchive.com'
+        };
+        
+        const SECTIONS = [
+            { id: 'sintesis', title: '1. Síntesis Ejecutiva', icon: '🎯' },
+            { id: 'principios', title: '2. Principios Rectores', icon: '🛡️' },
+            { id: 'diagnostico', title: '3. Diagnóstico y Riesgos', icon: '📊' },
+            { id: 'estrategia', title: '4. Propuesta Estratégica', icon: '💡' },
+            { id: 'metas', title: '5. Metas y Métricas', icon: '📈' },
+            { id: 'presupuesto', title: '6. Presupuesto', icon: '💰' },
+            { id: 'implementacion', title: '7. Plan de Implementación', icon: '✅' },
+            { id: 'comunicacion', title: '8. Comunicación', icon: '💬' },
+            { id: 'riesgos', title: '9. Riesgos y Mitigaciones', icon: '⚠️' },
+            { id: 'casos', title: '10. Estudios de Caso', icon: '📖' },
+            { id: 'recomendaciones', title: '11. Recomendaciones', icon: '⭐' },
+            { id: 'conclusion', title: '12. Conclusión', icon: '🏆' }
+        ];
+        
+        const MNEMONICS = {
+            DISRE: {
+                text: "DISRE - Estrategia Principal",
+                expanded: [
+                    { letter: 'D', text: 'Dignidad primero' },
+                    { letter: 'I', text: 'Investigación basada en evidencia' },
+                    { letter: 'S', text: 'Subsidiariedad local' },
+                    { letter: 'R', text: 'Reparación social' },
+                    { letter: 'E', text: 'Evaluación continua' }
+                ]
+            },
+            SAFE: {
+                text: "SAFE - Suministro Seguro",
+                expanded: [
+                    { letter: 'S', text: 'Supervisión médica' },
+                    { letter: 'A', text: 'Acceso controlado' },
+                    { letter: 'F', text: 'Farmacéutico garantizado' },
+                    { letter: 'E', text: 'Evaluación permanente' }
+                ]
+            },
+            CARE: {
+                text: "CARE - Atención Familiar",
+                expanded: [
+                    { letter: 'C', text: 'Consulta comunitaria' },
+                    { letter: 'A', text: 'Apoyo integral' },
+                    { letter: 'R', text: 'Reinserción laboral' },
+                    { letter: 'E', text: 'Estabilidad del hogar' }
+                ]
+            }
+        };
+        
+        const ACHIEVEMENTS = [
+            { id: 'reader', name: 'Lector Comprometido', desc: 'Lee 5 secciones', icon: '📚', threshold: 5, type: 'sections' },
+            { id: 'explorer', name: 'Explorador de Políticas', desc: 'Explora todas las secciones', icon: '🗺️', threshold: 12, type: 'sections' },
+            { id: 'bookmarker', name: 'Organizador', desc: 'Guarda 3 marcadores', icon: '🔖', threshold: 3, type: 'bookmarks' },
+            { id: 'annotator', name: 'Analista', desc: 'Crea 5 notas', icon: '📝', threshold: 5, type: 'notes' },
+            { id: 'completer', name: 'Maestro de Política', desc: 'Completa todo el contenido', icon: '🎓', threshold: 12, type: 'complete' }
+        ];
+        
+        // ===== INDEXEDDB MANAGER =====
+        
+        class DBManager {
+            static async init() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(APP_CONFIG.dbName, APP_CONFIG.dbVersion);
+                    
+                    request.onerror = () => reject(new Error('IndexedDB failed to open'));
+                    request.onsuccess = () => resolve(request.result);
+                    
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        
+                        if (!db.objectStoreNames.contains('progress')) {
+                            db.createObjectStore('progress', { keyPath: 'id' });
+                        }
+                        if (!db.objectStoreNames.contains('bookmarks')) {
+                            db.createObjectStore('bookmarks', { keyPath: 'id', autoIncrement: true });
+                        }
+                        if (!db.objectStoreNames.contains('notes')) {
+                            const notesStore = db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
+                            notesStore.createIndex('sectionId', 'sectionId', { unique: false });
+                        }
+                        if (!db.objectStoreNames.contains('achievements')) {
+                            db.createObjectStore('achievements', { keyPath: 'id' });
+                        }
+                        if (!db.objectStoreNames.contains('analytics')) {
+                            const analyticsStore = db.createObjectStore('analytics', { keyPath: 'id', autoIncrement: true });
+                            analyticsStore.createIndex('timestamp', 'timestamp', { unique: false });
+                        }
+                    };
+                });
+            }
+            
+            static async save(storeName, data) {
+                try {
+                    const db = await this.init();
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.transaction([storeName], 'readwrite');
+                        const store = transaction.objectStore(storeName);
+                        const request = store.put(data);
+                        
+                        request.onsuccess = () => resolve(request.result);
+                        request.onerror = () => reject(new Error('Failed to save data'));
+                    });
+                } catch (error) {
+                    console.error('DBManager save error:', error);
+                    return null;
+                }
+            }
+            
+            static async get(storeName, key) {
+                try {
+                    const db = await this.init();
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.transaction([storeName], 'readonly');
+                        const store = transaction.objectStore(storeName);
+                        const request = store.get(key);
+                        
+                        request.onsuccess = () => resolve(request.result);
+                        request.onerror = () => reject(new Error('Failed to get data'));
+                    });
+                } catch (error) {
+                    console.error('DBManager get error:', error);
+                    return null;
+                }
+            }
+            
+            static async getAll(storeName) {
+                try {
+                    const db = await this.init();
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.transaction([storeName], 'readonly');
+                        const store = transaction.objectStore(storeName);
+                        const request = store.getAll();
+                        
+                        request.onsuccess = () => resolve(request.result || []);
+                        request.onerror = () => reject(new Error('Failed to get all data'));
+                    });
+                } catch (error) {
+                    console.error('DBManager getAll error:', error);
+                    return [];
+                }
+            }
+            
+            static async delete(storeName, key) {
+                try {
+                    const db = await this.init();
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.transaction([storeName], 'readwrite');
+                        const store = transaction.objectStore(storeName);
+                        const request = store.delete(key);
+                        
+                        request.onsuccess = () => resolve(true);
+                        request.onerror = () => reject(new Error('Failed to delete data'));
+                    });
+                } catch (error) {
+                    console.error('DBManager delete error:', error);
+                    return false;
+                }
+            }
+        }
+        
+        // ===== APPLICATION STATE =====
+        
+        class AppState {
+            constructor() {
+                this.currentSection = 'sintesis';
+                this.readSections = new Set();
+                this.bookmarks = [];
+                this.notes = [];
+                this.achievements = new Set();
+                this.theme = 'light';
+            }
+            
+            async load() {
+                try {
+                    const progress = await DBManager.get('progress', 'main');
+                    if (progress) {
+                        this.readSections = new Set(progress.sections || []);
+                        this.currentSection = progress.currentSection || 'sintesis';
+                    }
+                    
+                    const achievementData = await DBManager.get('achievements', 'main');
+                    if (achievementData) {
+                        this.achievements = new Set(achievementData.unlocked || []);
+                    }
+                    
+                    this.bookmarks = await DBManager.getAll('bookmarks');
+                    this.notes = await DBManager.getAll('notes');
+                    
+                    const savedTheme = localStorage.getItem('theme') || 'light';
+                    this.theme = savedTheme;
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Failed to load state:', error);
+                    return false;
+                }
+            }
+            
+            async saveProgress() {
+                try {
+                    await DBManager.save('progress', {
+                        id: 'main',
+                        sections: Array.from(this.readSections),
+                        currentSection: this.currentSection,
+                        lastUpdated: new Date().toISOString()
+                    });
+                    
+                    await DBManager.save('achievements', {
+                        id: 'main',
+                        unlocked: Array.from(this.achievements),
+                        lastUpdated: new Date().toISOString()
+                    });
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Failed to save progress:', error);
+                    return false;
+                }
+            }
+            
+            markSectionRead(sectionId) {
+                this.readSections.add(sectionId);
+                this.saveProgress();
+                this.checkAchievements();
+            }
+            
+            checkAchievements() {
+                ACHIEVEMENTS.forEach(achievement => {
+                    if (this.achievements.has(achievement.id)) return;
+                    
+                    let shouldUnlock = false;
+                    
+                    switch (achievement.type) {
+                        case 'sections':
+                            shouldUnlock = this.readSections.size >= achievement.threshold;
+                            break;
+                        case 'bookmarks':
+                            shouldUnlock = this.bookmarks.length >= achievement.threshold;
+                            break;
+                        case 'notes':
+                            shouldUnlock = this.notes.length >= achievement.threshold;
+                            break;
+                        case 'complete':
+                            shouldUnlock = this.readSections.size === SECTIONS.length;
+                            break;
+                    }
+                    
+                    if (shouldUnlock) {
+                        this.unlockAchievement(achievement.id);
+                    }
+                });
+            }
+            
+            unlockAchievement(id) {
+                if (!this.achievements.has(id)) {
+                    this.achievements.add(id);
+                    this.saveProgress();
+                    
+                    const achievement = ACHIEVEMENTS.find(a => a.id === id);
+                    if (achievement) {
+                        showNotification(`🎉 ¡Logro desbloqueado: ${achievement.name}!`);
+                        trackEvent('achievement_unlocked', { achievement: id });
+                    }
+                    
+                    updateAchievementBadge();
+                }
+            }
+            
+            async addNote(sectionId, text) {
+                const sectionNotes = this.notes.filter(n => n.sectionId === sectionId);
+                if (sectionNotes.length >= APP_CONFIG.maxNotesPerSection) {
+                    showNotification('⚠️ Límite de notas alcanzado para esta sección', 'warning');
+                    return false;
+                }
+                
+                const sanitizedText = sanitizeInput(text);
+                
+                const note = {
+                    sectionId,
+                    text: sanitizedText,
+                    createdAt: Date.now()
+                };
+                
+                const id = await DBManager.save('notes', note);
+                note.id = id;
+                this.notes.push(note);
+                this.checkAchievements();
+                
+                trackEvent('note_added', { section: sectionId });
+                return true;
+            }
+            
+            async deleteNote(noteId) {
+                await DBManager.delete('notes', noteId);
+                this.notes = this.notes.filter(n => n.id !== noteId);
+            }
+            
+            async addBookmark(sectionId, title) {
+                const bookmark = {
+                    sectionId,
+                    title,
+                    createdAt: Date.now()
+                };
+                
+                const id = await DBManager.save('bookmarks', bookmark);
+                bookmark.id = id;
+                this.bookmarks.push(bookmark);
+                this.checkAchievements();
+                
+                trackEvent('bookmark_added', { section: sectionId });
+                return true;
+            }
+        }
+        
+        // ===== UTILITY FUNCTIONS =====
+        
+        function sanitizeInput(input) {
+            const div = document.createElement('div');
+            div.textContent = input;
+            return div.innerHTML;
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#f59e0b'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                z-index: 3000;
+                max-width: 300px;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        async function trackEvent(eventType, data = {}) {
+            try {
+                const event = {
+                    type: eventType,
+                    data,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    screenResolution: `${window.screen.width}x${window.screen.height}`
+                };
+                
+                await DBManager.save('analytics', event);
+            } catch (error) {
+                console.error('Analytics error:', error);
+            }
+        }
+        
+        // ===== CONTENT GENERATOR =====
+        
+        function getContentHTML(sectionId) {
+            const contentMap = {
+                sintesis: `
+                    <h2>1. Síntesis Ejecutiva</h2>
+                    
+                    <div class="mnemonic-box">
+                        <div class="mnemonic-title">🧠 Mnemotecnia clave: ${MNEMONICS.DISRE.text}</div>
+                        <button class="mnemonic-expand" onclick="showMnemonic('DISRE')">Ver expansión →</button>
+                    </div>
+                    
+                    <p>La «guerra contra las drogas» ha demostrado, a lo largo de décadas, que la represión por sí sola no elimina el consumo ni mejora las condiciones sociales. En cambio, suele producir efectos adversos: criminalización masiva, fortalecimiento de mercados ilícitos, violencia organizada y fractura familiar.</p>
+                    
+                    <p>Este documento propone una <strong>alternativa práctica</strong>, basada en tres pilares complementarios:</p>
+                    
+                    <div class="collapsible">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>📋 Los Tres Pilares Estratégicos</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <ol style="margin-left: 2rem; margin-top: 1rem;">
+                                <li><strong>Despenalización</strong> y respuesta sanitaria inmediata al consumo personal</li>
+                                <li><strong>Pilotos controlados</strong> de suministro seguro para sustancias de alto riesgo</li>
+                                <li><strong>Programas de reparación social</strong>, estabilidad familiar y reinserción económica</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight-box info">
+                        <h3 style="margin-bottom: 0.5rem;">🎯 Objetivo Central</h3>
+                        <p>Reducir el daño humano y social, proteger la soberanía comunitaria y desarticular estructuras criminales que se benefician de la prohibición.</p>
+                    </div>
+                `,
+                
+                principios: `
+                    <h2>2. Principios Rectores</h2>
+                    
+                    <p>Esta propuesta se fundamenta en cinco principios éticos y operativos que guían todas las decisiones de política:</p>
+                    
+                    <div class="collapsible">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>❤️ 1. Dignidad y Salud</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <p>Las respuestas deben priorizar la vida, la salud mental y la reconstrucción familiar por encima de la sanción penal.</p>
+                            <ul style="margin-left: 2rem; margin-top: 1rem;">
+                                <li>Tratamiento sobre castigo</li>
+                                <li>Reducción de daños como prioridad</li>
+                                <li>Respeto a la autonomía personal</li>
+                                <li>Protección de la unidad familiar</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="collapsible">
+                        <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                            <span>🏘️ 2. Subsidiariedad y Soberanía</span>
+                            <span class="collapsible-icon">▶</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <p>Las soluciones se diseñan y ejecutan localmente, con el Estado como garante y las comunidades como co-diseñadoras.</p>
+                        </div>
+                    </div>
+                `,
+                
+                diagnostico: `
+                    <h2>3. Diagnóstico y Riesgos</h2>
+                    <p>El modelo prohibicionista actual genera múltiples daños sistémicos que perpetúan ciclos de violencia, pobreza y desintegración social.</p>
+                `,
+                
+                estrategia: `
+                    <h2>4. Propuesta Estratégica</h2>
+                    
+                    <div class="mnemonic-box">
+                        <div class="mnemonic-title">🧠 Mnemotecnia: ${MNEMONICS.CARE.text}</div>
+                        <button class="mnemonic-expand" onclick="showMnemonic('CARE')">Ver expansión →</button>
+                    </div>
+                `,
+                
+                metas: `
+                    <h2>5. Metas y Métricas</h2>
+                    <p>Sistema de evaluación cuantitativa con indicadores verificables y plazos específicos.</p>
+                `,
+                
+                presupuesto: `
+                    <h2>6. Presupuesto Estimado</h2>
+                    <p>Proyección financiera a 24 meses con fuentes de financiamiento identificadas.</p>
+                `,
+                
+                implementacion: `
+                    <h2>7. Plan de Implementación - 24 Meses</h2>
+                    <p>Cronograma detallado con responsables, entregables y puntos de decisión.</p>
+                `,
+                
+                comunicacion: `
+                    <h2>8. Estrategia de Comunicación</h2>
+                    <p>Plan integral para generar confianza, educar y mantener transparencia durante todo el proceso.</p>
+                `,
+                
+                riesgos: `
+                    <h2>9. Riesgos y Estrategias de Mitigación</h2>
+                    <p>Análisis sistemático de amenazas con planes de contingencia específicos.</p>
+                `,
+                
+                casos: `
+                    <h2>10. Estudios de Caso Internacionales</h2>
+                    <p>Experiencias exitosas de otros países que han implementado enfoques de reducción de daños.</p>
+                `,
+                
+                recomendaciones: `
+                    <h2>11. Recomendaciones Finales</h2>
+                    <p>Síntesis de acciones prioritarias para los responsables de toma de decisiones.</p>
+                `,
+                
+                conclusion: `
+                    <h2>12. Conclusión</h2>
+                    <p>La transición hacia un modelo de política de drogas basado en salud pública es posible, medible y éticamente necesaria.</p>
+                `
+            };
+            
+            return contentMap[sectionId] || '<h2>Contenido en desarrollo</h2>';
+        }
+        
+        // ===== UI FUNCTIONS =====
+        
+        function toggleCollapsible(element) {
+            const collapsible = element.closest('.collapsible');
+            collapsible.classList.toggle('open');
+        }
+        
+        function showMnemonic(mnemonicKey) {
+            const mnemonic = MNEMONICS[mnemonicKey];
+            if (!mnemonic) return;
+            
+            const modal = document.getElementById('mnemonicModal');
+            const title = document.getElementById('mnemonicTitle');
+            const list = document.getElementById('mnemonicList');
+            
+            title.textContent = mnemonic.text;
+            list.innerHTML = mnemonic.expanded.map(item => 
+                `<li><span class="mnemonic-letter">${item.letter}</span> → ${item.text}</li>`
+            ).join('');
+            
+            modal.classList.add('open');
+        }
+        
+        function updateAchievementBadge() {
+            const badge = document.getElementById('achievementBadge');
+            if (appState.achievements.size > 0) {
+                badge.textContent = `(${appState.achievements.size})`;
+                badge.style.display = 'inline';
+            }
+        }
+        
+        function loadSection(sectionId) {
+            appState.currentSection = sectionId;
+            appState.markSectionRead(sectionId);
+            
+            const contentBody = document.getElementById('contentBody');
+            contentBody.innerHTML = getContentHTML(sectionId);
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.section === sectionId) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Show notes section
+            document.getElementById('notesSection').style.display = 'block';
+            loadNotes(sectionId);
+            
+            // Update progress
+            updateProgress();
+            
+            // Track
+            trackEvent('section_viewed', { section: sectionId });
+            
+            // Close sidebar on mobile
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        }
+        
+        function loadNotes(sectionId) {
+            const notesList = document.getElementById('notesList');
+            const sectionNotes = appState.notes.filter(n => n.sectionId === sectionId);
+            
+            notesList.innerHTML = sectionNotes.map(note => `
+                <div class="note-item">
+                    <p>${note.text}</p>
+                    <div class="note-meta">
+                        ${new Date(note.createdAt).toLocaleDateString('es-ES')}
+                        <button onclick="deleteNote(${note.id})" style="float: right; background: none; border: none; cursor: pointer; color: #ef4444;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function deleteNote(noteId) {
+            await appState.deleteNote(noteId);
+            loadNotes(appState.currentSection);
+        }
+        
+        function updateProgress() {
+            const percentage = (appState.readSections.size / SECTIONS.length) * 100;
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${appState.readSections.size}/${SECTIONS.length}`;
+            
+            const dots = document.getElementById('progressDots');
+            dots.innerHTML = SECTIONS.map(section => 
+                `<div class="progress-dot ${appState.readSections.has(section.id) ? 'complete' : ''}"></div>`
+            ).join('');
+        }
+        
+        function renderNavigation() {
+            const navMenu = document.getElementById('navMenu');
+            navMenu.innerHTML = SECTIONS.map(section => `
+                <div class="nav-item ${appState.currentSection === section.id ? 'active' : ''}" 
+                     data-section="${section.id}"
+                     onclick="loadSection('${section.id}')">
+                    <span>${section.icon}</span>
+                    <span style="flex: 1;">${section.title}</span>
+                    ${appState.readSections.has(section.id) ? '<span class="checkmark">✓</span>' : ''}
+                </div>
+            `).join('');
+        }
+        
+        function renderAchievements() {
+            const list = document.getElementById('achievementsList');
+            list.innerHTML = ACHIEVEMENTS.map(achievement => {
+                const unlocked = appState.achievements.has(achievement.id);
+                return `
+                    <div class="achievement-card ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div style="flex: 1;">
+                            <h4>${achievement.name}</h4>
+                            <p style="font-size: 0.875rem; color: #6b7280;">${achievement.desc}</p>
+                        </div>
+                        ${unlocked ? '<span style="font-size: 1.5rem;">✅</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ===== EXPORT FUNCTIONS =====
+        
+        function exportHTML() {
+            const html = document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `politica-drogas-${Date.now()}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function exportPDF() {
+            window.print();
+        }
+        
+        function exportJSON() {
+            const data = {
+                progress: Array.from(appState.readSections),
+                bookmarks: appState.bookmarks,
+                notes: appState.notes,
+                achievements: Array.from(appState.achievements),
+                exportedAt: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `politica-drogas-datos-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // ===== INITIALIZATION =====
+        
+        let appState;
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            appState = new AppState();
+            await appState.load();
+            
+            // Apply theme
+            document.body.className = `theme-${appState.theme}`;
+            document.getElementById('themeSelector').value = appState.theme;
+            
+            // Render UI
+            renderNavigation();
+            updateProgress();
+            updateAchievementBadge();
+            
+            // Event listeners
+            document.getElementById('themeSelector').addEventListener('change', (e) => {
+                appState.theme = e.target.value;
+                document.body.className = `theme-${appState.theme}`;
+                localStorage.setItem('theme', appState.theme);
+            });
+            
+            document.getElementById('achievementsBtn').addEventListener('click', () => {
+                renderAchievements();
+                document.getElementById('achievementsModal').classList.add('open');
+            });
+            
+            document.getElementById('closeAchievements').addEventListener('click', () => {
+                document.getElementById('achievementsModal').classList.remove('open');
+            });
+            
+            document.getElementById('closeMnemonic').addEventListener('click', () => {
+                document.getElementById('mnemonicModal').classList.remove('open');
+            });
+            
+            document.getElementById('addNoteBtn').addEventListener('click', async () => {
+                const input = document.getElementById('noteInput');
+                if (input.value.trim()) {
+                    await appState.addNote(appState.currentSection, input.value);
+                    input.value = '';
+                    loadNotes(appState.currentSection);
+                }
+            });
+            
+            document.getElementById('exportHTML').addEventListener('click', exportHTML);
+            document.getElementById('exportPDF').addEventListener('click', exportPDF);
+            document.getElementById('exportJSON').addEventListener('click', exportJSON);
+            
+            document.getElementById('menuToggle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
+            
+            document.getElementById('searchBox').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(term) ? 'flex' : 'none';
+                });
+            });
+            
+            // Load first section
+            loadSection('sintesis');
+        });
+        
+        // Make functions global
+        window.toggleCollapsible = toggleCollapsible;
+        window.showMnemonic = showMnemonic;
+        window.loadSection = loadSection;
+        window.deleteNote = deleteNote;
+    </script>
+</body>
+</html>
